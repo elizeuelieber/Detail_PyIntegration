@@ -1,0 +1,32 @@
+services:
+  python-crawler:
+    build: .
+    container_name: quallity-python
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATA_DIR: /data
+      APP_CONFIG: /config/config.json
+      SELENIUM_REMOTE_URL: ""
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8088}:8000"
+    volumes:
+      - ./config/config.json:/config/config.json:ro
+      - ./data:/data
+    networks:
+      - quallity-net
+    shm_size: 1gb
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 25s
+
+networks:
+  quallity-net:
+    external: true
+    name: quallity-net

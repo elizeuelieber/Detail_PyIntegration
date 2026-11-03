@@ -1,0 +1,4 @@
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+mysql-connector-python==9.1.0
+selenium==4.27.1

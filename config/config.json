@@ -1,0 +1,17 @@
+{
+  "mysql": {
+    "host": "host.docker.internal",
+    "user": "PREENCHER_USUARIO",
+    "password": "PREENCHER_SENHA",
+    "database": "PREENCHER_BANCO",
+    "port": 3306
+  },
+  "amwSystem": {
+    "username": "PREENCHER_USUARIO",
+    "password": "PREENCHER_SENHA",
+    "diretorio_download": "/data/downloads"
+  },
+  "det2il": {
+    "diretorio_log": "/data/logs"
+  }
+}

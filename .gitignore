@@ -1,0 +1,6 @@
+.env
+config/config.local.json
+data/**
+!data/.gitkeep
+__pycache__/
+*.py[cod]
