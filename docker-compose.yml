@@ -9,6 +9,16 @@ services:
       DATA_DIR: /data
       APP_CONFIG: /config/config.json
       SELENIUM_REMOTE_URL: ""
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=root_default"
+      - "traefik.http.routers.python-crawler.rule=Host(`crawler.srv850139.hstgr.cloud`)"
+      - "traefik.http.routers.python-crawler.entrypoints=web,websecure"
+      - "traefik.http.routers.python-crawler.tls=true"
+      - "traefik.http.routers.python-crawler.tls.certresolver=mytlschallenge"
+      - "traefik.http.routers.python-crawler.service=python-crawler"
+      - "traefik.http.services.python-crawler.loadbalancer.server.scheme=http"
+      - "traefik.http.services.python-crawler.loadbalancer.server.port=8000"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
@@ -17,7 +27,7 @@ services:
       - ./config/config.json:/config/config.json:ro
       - ./data:/data
     networks:
-      - quallity-net
+      - n8n
     shm_size: 1gb
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
@@ -27,6 +37,6 @@ services:
       start_period: 25s
 
 networks:
-  quallity-net:
+  n8n:
     external: true
-    name: quallity-net
+    name: root_default
