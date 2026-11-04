@@ -76,7 +76,7 @@ O arquivo de configuração fica separado do código e é montado somente para l
 
 - O fluxo completo **baixa e importa** o backup no MySQL configurado; confirme o banco de destino e faça um backup de segurança antes de testar.
 - A lógica de navegação usa seletores do site fornecido e pode precisar de ajustes se a página mudar. A autenticação e os downloads reais dependem de acesso ao site.
-- A importação mantém o método de divisão SQL simplificado por ponto e vírgula; dumps com rotinas/procedures ou ponto e vírgula dentro de strings podem exigir um parser específico.
+- O importador lê as diretivas `DELIMITER` do dump e separa instruções respeitando strings, identificadores entre crases, comentários e blocos de procedures. Ainda assim, valide primeiro em uma cópia/banco de teste: falhas podem deixar alterações parciais porque comandos DDL do MySQL fazem commit implícito.
 - A imagem instala Chromium/driver do repositório Debian no build. Se o build falhar por disponibilidade de pacotes ou arquitetura do VPS, veja o erro do Docker; o requisito é imagem Debian compatível com a arquitetura suportada.
 - A API roda uma execução por vez em memória. Ao recriar o contêiner durante um job, o job é interrompido; os arquivos baixados e logs permanecem na pasta persistente.
 
