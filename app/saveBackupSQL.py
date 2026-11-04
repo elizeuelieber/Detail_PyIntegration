@@ -188,6 +188,17 @@ def main() -> None:
             autocommit=False,
         )
         sql = backup.read_text(encoding="utf-8-sig")
+
+
+        # Remove a cláusula DEFINER, inclusive quando aparece em comentários
+        # executáveis do MySQL, como /*!50013 DEFINER=... */.
+        sql = re.sub(
+            r"\bDEFINER\s*=\s*(?:`(?:``|[^`])*`|[^\s@]+)\s*@\s*(?:`(?:``|[^`])*`|[^\s*/;]+)",
+            "",
+            sql,
+            flags=re.IGNORECASE,
+        )
+
         cursor = connection.cursor()
         processed = 0
         for processed, statement in enumerate(split_sql_statements(sql), start=1):
