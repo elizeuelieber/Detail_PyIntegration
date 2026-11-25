@@ -1,14 +1,16 @@
 {
+  "cliente": "Tela Norte Sul",
   "mysql": {
-    "host": "host.docker.internal",
-    "user": "PREENCHER_USUARIO",
-    "password": "PREENCHER_SENHA",
-    "database": "PREENCHER_BANCO",
-    "port": 3306
+    "host": "powerbi.telasnortesul.te2k.app.br",
+    "user": "amwsys_sistema44",
+    "password": "99416770f25f7da5ecc492eb3333485d",
+    "database": "amwsys_sistema44",
+    "port": 59901
   },
   "amwSystem": {
-    "username": "PREENCHER_USUARIO",
-    "password": "PREENCHER_SENHA",
+    "username": "Jonathan",
+    "password": "97$Amwsys",
+    "Amw_Empresa": "sistema57",
     "diretorio_download": "/data/downloads"
   },
   "det2il": {

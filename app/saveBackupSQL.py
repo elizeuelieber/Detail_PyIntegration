@@ -10,6 +10,7 @@ from typing import Iterator
 import mysql.connector
 
 CONFIG_FILE = Path(os.getenv("APP_CONFIG", "/config/config.json"))
+print(f"CONFIG_FILE: {CONFIG_FILE}")
 DATA_DIR = Path(os.getenv("DATA_DIR", "/data"))
 
 
@@ -161,14 +162,15 @@ def main() -> None:
     log_dir = configured_path(config.get("det2il", {}).get("diretorio_log", ""), DATA_DIR / "logs")
     backup_dir = configured_path(config.get("amwSystem", {}).get("diretorio_download", ""), DATA_DIR / "downloads")
     backup = backup_dir / f"backup_{started:%Y%m%d}.sql"
+    cliente = config.get("cliente", "").strip()
     if not backup.is_file():
         raise FileNotFoundError(f"Backup SQL não encontrado: {backup}")
 
-    log_file = log_dir / f"{started:%Y%m%d%H%M%S}_Quallity_BackupSQL.json"
+    log_file = log_dir / f"{started:%Y%m%d%H%M%S}_{cliente}_BackupSQL.json"
     log_data = {
         "data_inicio": started.strftime("%Y-%m-%d %H:%M:%S"),
         "data_fim": "",
-        "cliente": "Quallity",
+        "cliente": f"{cliente}",
         "sistema": "BackupSQL",
         "status": "iniciado",
     }
