@@ -1,7 +1,7 @@
 services:
   python-crawler:
     build: .
-    container_name: quallity-python
+    container_name: tns-python
     restart: unless-stopped
     env_file:
       - .env
@@ -17,7 +17,7 @@ services:
       - ./config/config.json:/config/config.json:ro
       - ./data:/data
     networks:
-      - quallity-net
+      - tns-net
     shm_size: 1gb
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
@@ -27,6 +27,6 @@ services:
       start_period: 25s
 
 networks:
-  quallity-net:
+  tns-net:
     external: true
-    name: quallity-net
+    name: tns-net
