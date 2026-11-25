@@ -27,15 +27,15 @@ def configured_path(value: str, fallback: Path) -> Path:
     return path
 
 
-def write_log(log_dir: Path, started: datetime, status: str) -> None:
+def write_log(log_dir: Path, started: datetime, status: str, cliente: str) -> None:
     payload = {
         "data_inicio": started.strftime("%Y-%m-%d %H:%M:%S"),
         "data_fim": datetime.now().strftime("%Y-%m-%d %H:%M:%S") if status != "iniciado" else "",
-        "cliente": "Quallity",
+        "cliente": cliente,
         "sistema": "Crawling",
         "status": status,
     }
-    filename = f"{started:%Y%m%d%H%M%S}_Quallity_Crawling.json"
+    filename = f"{started:%Y%m%d%H%M%S}_{cliente}_Crawling.json"
     (log_dir / filename).write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
@@ -46,13 +46,20 @@ def main() -> None:
     system = config["amwSystem"]
     username = system["username"]
     password = system["password"]
+    empresa = system.get("Amw_Empresa", "").strip()
+    cliente = config.get("cliente", "").strip()
+
     if not username or not password:
-        raise ValueError("Preencha amwSystem.username e amwSystem.password no config.json")
+        raise ValueError("Preencha amwSystem.username e amwSystem.password")
+    if not empresa:
+        raise ValueError("Preencha amwSystem.Amw_Empresa (ex.: sistemaXX)")
+    if not cliente:
+        raise ValueError("Preencha cliente")
 
     downloads = configured_path(system.get("diretorio_download", ""), DATA_DIR / "downloads")
     logs = configured_path(config.get("det2il", {}).get("diretorio_log", ""), DATA_DIR / "logs")
     started = datetime.now()
-    write_log(logs, started, "iniciado")
+    write_log(logs, started, "iniciado", cliente)
 
     options = Options()
     options.add_argument("--headless=new")
@@ -80,7 +87,7 @@ def main() -> None:
         except Exception:
             pass  # O diretório também é montado no contêiner do navegador.
 
-        driver.get("https://amwsys.com.br/sistema57/admin_home.php")
+        driver.get(f"https://amwsys.com.br/{empresa}/admin_home.php")
         wait = WebDriverWait(driver, 30)
         wait.until(EC.presence_of_element_located((By.ID, "formlogin"))).send_keys(username)
         driver.find_element(By.NAME, "formsenha").send_keys(password)
@@ -112,12 +119,12 @@ def main() -> None:
         while time.monotonic() < deadline:
             if expected.is_file() and not (downloads / (expected.name + ".crdownload")).exists():
                 print(f"Download concluído: {expected.name}")
-                write_log(logs, started, "Sucesso")
+                write_log(logs, started, "Sucesso", cliente)
                 return
             time.sleep(2)
         raise TimeoutError(f"O arquivo de backup não foi baixado no tempo esperado: {expected.name}")
     except Exception:
-        write_log(logs, started, "Falha")
+        write_log(logs, started, "Falha", cliente)
         raise
     finally:
         if driver is not None:
