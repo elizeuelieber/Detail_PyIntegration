@@ -34,6 +34,35 @@ def login_concluido(d):
         return "ok"
     return False
 
+def selecionar_empresa(driver, empresa):
+    # Procura o seletor sem esperar muito: ele pode não existir
+    campos = driver.find_elements(By.ID, "empresa")
+
+    if not campos:
+        print("Seletor de empresa ausente (grupo com uma empresa). Seguindo sem selecionar.")
+        return
+
+    campo = campos[0]
+
+    # Se o elemento existe mas está oculto, também não há o que selecionar
+    if not campo.is_displayed():
+        print("Seletor de empresa oculto. Seguindo sem selecionar.")
+        return
+
+    if not empresa:
+        raise RuntimeError("O seletor de empresa apareceu, mas nenhuma empresa foi informada.")
+
+    select = Select(campo)
+    alvo = " ".join(str(empresa).split()).casefold()
+
+    for opcao in select.options:
+        if " ".join(opcao.text.split()).casefold() == alvo:
+            select.select_by_visible_text(opcao.text)
+            return
+
+    opcoes = [o.text for o in select.options]
+    raise RuntimeError(f"Empresa '{empresa}' não encontrada. Opções: {opcoes}")
+
 def write_log(log_dir: Path, started: datetime, status: str, cliente: str) -> None:
     payload = {
         "data_inicio": started.strftime("%Y-%m-%d %H:%M:%S"),
@@ -101,19 +130,7 @@ def main() -> None:
         wait.until(EC.presence_of_element_located((By.ID, "formlogin"))).send_keys(username)
         driver.find_element(By.NAME, "formsenha").send_keys(password)
 
-        empresa_select = Select(wait.until(
-            EC.presence_of_element_located((By.ID, "empresa"))
-        ))
-
-        empresa_texto = " ".join(str(empresa).split())  # remove espaços extras
-
-        try:
-            empresa_select.select_by_visible_text(empresa_texto)
-        except Exception:
-            opcoes = [o.text for o in empresa_select.options]
-            raise RuntimeError(
-                f"Empresa '{empresa_texto}' não encontrada. Opções disponíveis: {opcoes}"
-            )
+        selecionar_empresa(driver, empresa)
 
         wait.until(
             EC.element_to_be_clickable(
@@ -134,6 +151,16 @@ def main() -> None:
         if resultado == "erro":
             msg = driver.find_element(By.CSS_SELECTOR, "div.errorbox.alert-danger").text
             raise RuntimeError(f"Falha no login: {msg}")
+
+        # Opcional: confirma a empresa logada
+        if empresa:
+            nome = driver.find_element(
+                By.CSS_SELECTOR, "div.selecao_empresa_caixa strong"
+            ).get_attribute("textContent")
+            if " ".join(nome.split()).casefold() != " ".join(str(empresa).split()).casefold():
+                raise RuntimeError(f"Empresa logada '{nome.strip()}' difere da esperada '{empresa}'.")
+
+        print("Login confirmado.")
 
         # Confirme o login antes de continuar para os menus
         wait.until(EC.presence_of_element_located((By.ID, "menu-toggler")))
