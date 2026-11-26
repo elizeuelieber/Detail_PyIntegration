@@ -95,18 +95,21 @@ def main() -> None:
         testeEmpresa = driver.find_element(By.ID, "empresa")
         if testeEmpresa:
             driver.find_element(By.ID, "empresa").send_keys(empresa)
-        buttons = driver.find_elements(By.XPATH, "//*[@id='login-box']/div/div/form/fieldset/div[2]/button")
-        if not buttons:
-            raise RuntimeError("Botão de login não encontrado")
-        buttons[0].click()
+
+        elements = driver.find_elements(By.XPATH, "//*[@id='login-box']/div/div/form/fieldset/div[2]/button")
+
+        if elements:
+            elements[0].click()
+        else:
+            print("Elemento não encontrado.")  
+        time.sleep(5)
 
         try:
-            menu = WebDriverWait(driver, 5).until(
-                EC.visibility_of_element_located((By.XPATH, "//*[@id='menu-toggler']/span"))
-            )
+            menu = WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//*[@id='menu-toggler']/span")))
+            print("Menu encontrado e visível!")
             menu.click()
         except TimeoutException:
-            print("Menu lateral não precisou ser expandido.")
+            print("Menu lateral não encontrado")
 
         wait.until(EC.element_to_be_clickable((By.XPATH, "//*[@id='secao_999']/span"))).click()
         wait.until(EC.element_to_be_clickable((By.XPATH, "//*[@id='menu_sistema']/li[8]/ul/li[1]/a"))).click()
