@@ -162,11 +162,19 @@ def main() -> None:
 
         print("Login confirmado.")
 
-        # Confirme o login antes de continuar para os menus
-        wait.until(EC.presence_of_element_located((By.ID, "menu-toggler")))
-
-        wait.until(EC.element_to_be_clickable((By.XPATH, "//*[@id='secao_999']/span"))).click()
-        wait.until(EC.element_to_be_clickable((By.XPATH, "//*[@id='menu_sistema']/li[8]/ul/li[1]/a"))).click()
+        try:
+            # Espera até 3 segundos para o elemento estar visível
+            menu_element = WebDriverWait(driver, 3).until(EC.visibility_of_element_located((By.XPATH, "//*[@id='menu-toggler']/span"))
+            )
+            print("Elemento encontrado e visível!")
+            menu_element.click()  # Ação no elemento encontrado
+        except:
+            print("Elemento não encontrado ou não visível")
+        # # Navega pelos menus para localizar o arquivo
+        driver.find_element(By.XPATH, "//*[@id='secao_999']/span").click()
+        time.sleep(5)
+        driver.find_element(By.XPATH, "//*[@id='menu_sistema']/li[8]/ul/li[1]/a").click()
+        time.sleep(5)
         wait.until(EC.element_to_be_clickable((By.ID, "bnt_gerar_bkp"))).click()
 
         # Remove o backup anterior antes de solicitar outro, evitando confundi-lo com o download atual.
