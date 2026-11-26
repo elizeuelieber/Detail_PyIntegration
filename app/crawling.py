@@ -27,6 +27,12 @@ def configured_path(value: str, fallback: Path) -> Path:
     path.mkdir(parents=True, exist_ok=True)
     return path
 
+def login_concluido(d):
+    if d.find_elements(By.CSS_SELECTOR, "div.errorbox.alert-danger"):
+        return "erro"
+    if d.find_elements(By.ID, "menu-toggler"):
+        return "ok"
+    return False
 
 def write_log(log_dir: Path, started: datetime, status: str, cliente: str) -> None:
     payload = {
@@ -114,6 +120,20 @@ def main() -> None:
                 (By.CSS_SELECTOR, "form[name='formulario'] button[type='submit']")
             )
         ).click()
+
+        try:
+            resultado = wait.until(login_concluido)
+        except TimeoutException:
+            print("URL atual:", driver.current_url)
+            print("Título:", driver.title)
+            driver.save_screenshot("/app/erro_login.png")
+            print("Iframes:", len(driver.find_elements(By.TAG_NAME, "iframe")))
+            print(driver.page_source[:2000])
+            raise
+
+        if resultado == "erro":
+            msg = driver.find_element(By.CSS_SELECTOR, "div.errorbox.alert-danger").text
+            raise RuntimeError(f"Falha no login: {msg}")
 
         # Confirme o login antes de continuar para os menus
         wait.until(EC.presence_of_element_located((By.ID, "menu-toggler")))
