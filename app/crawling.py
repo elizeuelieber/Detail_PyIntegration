@@ -46,12 +46,13 @@ def main() -> None:
     system = config["amwSystem"]
     username = system["username"]
     password = system["password"]
-    empresa = system.get("Amw_Empresa", "").strip()
+    empresa = system["empresa"]
+    AMWempresa = system.get("Amw_Empresa", "").strip()
     cliente = config.get("cliente", "").strip()
 
     if not username or not password:
         raise ValueError("Preencha amwSystem.username e amwSystem.password")
-    if not empresa:
+    if not AMWempresa:
         raise ValueError("Preencha amwSystem.Amw_Empresa (ex.: sistemaXX)")
     if not cliente:
         raise ValueError("Preencha cliente")
@@ -87,10 +88,13 @@ def main() -> None:
         except Exception:
             pass  # O diretório também é montado no contêiner do navegador.
 
-        driver.get(f"https://amwsys.com.br/{empresa}/admin_home.php")
+        driver.get(f"https://amwsys.com.br/{AMWempresa}/admin_home.php")
         wait = WebDriverWait(driver, 30)
         wait.until(EC.presence_of_element_located((By.ID, "formlogin"))).send_keys(username)
         driver.find_element(By.NAME, "formsenha").send_keys(password)
+        testeEmpresa = driver.find_element(By.ID, "empresa")
+        if testeEmpresa:
+            driver.find_element(By.ID, "empresa").send_keys(empresa)
         buttons = driver.find_elements(By.XPATH, "//*[@id='login-box']/div/div/form/fieldset/div[2]/button")
         if not buttons:
             raise RuntimeError("Botão de login não encontrado")
