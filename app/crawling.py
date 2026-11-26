@@ -13,6 +13,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.ui import Select
 
 BASE_DIR = Path(__file__).resolve().parent
 CONFIG_FILE = Path(os.getenv("APP_CONFIG", "/config/config.json"))
@@ -89,27 +90,33 @@ def main() -> None:
             pass  # O diretório também é montado no contêiner do navegador.
 
         driver.get(f"https://amwsys.com.br/{AMWempresa}/admin_home.php")
+
         wait = WebDriverWait(driver, 30)
         wait.until(EC.presence_of_element_located((By.ID, "formlogin"))).send_keys(username)
         driver.find_element(By.NAME, "formsenha").send_keys(password)
-        testeEmpresa = driver.find_element(By.ID, "empresa")
-        if testeEmpresa:
-            driver.find_element(By.ID, "empresa").send_keys(empresa)
 
-        elements = driver.find_elements(By.XPATH, "//*[@id='login-box']/div/div/form/fieldset/div[2]/button")
+        empresa_select = Select(wait.until(
+            EC.presence_of_element_located((By.ID, "empresa"))
+        ))
 
-        if elements:
-            elements[0].click()
-        else:
-            print("Elemento não encontrado.")  
-        time.sleep(5)
+        empresa_texto = " ".join(str(empresa).split())  # remove espaços extras
 
         try:
-            menu = WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//*[@id='menu-toggler']/span")))
-            print("Menu encontrado e visível!")
-            menu.click()
-        except TimeoutException:
-            print("Menu lateral não encontrado")
+            empresa_select.select_by_visible_text(empresa_texto)
+        except Exception:
+            opcoes = [o.text for o in empresa_select.options]
+            raise RuntimeError(
+                f"Empresa '{empresa_texto}' não encontrada. Opções disponíveis: {opcoes}"
+            )
+
+        wait.until(
+            EC.element_to_be_clickable(
+                (By.CSS_SELECTOR, "form[name='formulario'] button[type='submit']")
+            )
+        ).click()
+
+        # Confirme o login antes de continuar para os menus
+        wait.until(EC.presence_of_element_located((By.ID, "menu-toggler")))
 
         wait.until(EC.element_to_be_clickable((By.XPATH, "//*[@id='secao_999']/span"))).click()
         wait.until(EC.element_to_be_clickable((By.XPATH, "//*[@id='menu_sistema']/li[8]/ul/li[1]/a"))).click()
