@@ -1,5 +1,5 @@
 services:
-  python-crawler:
+  python-tns:
     build: .
     container_name: tns-python
     restart: unless-stopped
@@ -9,15 +9,23 @@ services:
       DATA_DIR: /data
       APP_CONFIG: /config/config.json
       SELENIUM_REMOTE_URL: ""
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=root_default"
+      - "traefik.http.routers.tns.rule=Host(`tnsx.srv850139.hstgr.cloud`)"
+      - "traefik.http.routers.tns.entrypoints=web,websecure"
+      - "traefik.http.routers.tns.tls=true"
+      - "traefik.http.routers.tns.tls.certresolver=mytlschallenge"
+      - "traefik.http.routers.tns.service=tns"
+      - "traefik.http.services.tns.loadbalancer.server.scheme=http"
+      - "traefik.http.services.tns.loadbalancer.server.port=8000"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
-      - "127.0.0.1:${WEB_PORT:-8088}:8000"
+      - "127.0.0.1:${WEB_PORT:-8089}:8000"
     volumes:
       - ./config/config.json:/config/config.json:ro
       - ./data:/data
-    networks:
-      - tns-net
     shm_size: 1gb
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
@@ -26,7 +34,10 @@ services:
       retries: 3
       start_period: 25s
 
+    networks:
+      - n8n
+
 networks:
-  tns-net:
+  n8n:
     external: true
-    name: tns-net
+    name: root_default
